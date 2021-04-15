@@ -10,6 +10,7 @@ import os
 import wget
 import time
 from bs4 import BeautifulSoup
+data={}
 url='https://www.instagram.com/twhiddleston/'
 driver = webdriver.Chrome('C:/Users/user/pyprojects/lib/chromedriver.exe')
 driver.get('https://www.instagram.com/twhiddleston')
@@ -25,8 +26,8 @@ not_now2 = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,
 searchbox = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//input[@placeholder='Search']")))
 searchbox.clear()
 
-users=['twhiddleston','maddenrichard','tomhardy','courtneycoxofficial','alysonhannigan','nph','davidbeckham']
-#search for the hashtag cat
+users=['twhiddleston','missmayim','juventus','courtneycoxofficial','piawurtzbach','johnlegend','davidbeckham']
+data={}
 #for i in range(0,len(users)):
 
 searchbox.send_keys(users[0])
@@ -42,18 +43,29 @@ value=soup.find_all('div',class_="v9tJq AAaSh VfzDr")
 name=soup.find('h1',class_="rhpdm")
 website=soup.find('a',class_="yLUwa")
 bio=soup.find('div',class_="-vDIg").span.string
-follow_info=soup.find_all('span',class_="g47SY lOXF2")
-print(name.text)
-print(bio)
-print(website.text)
-post_info=soup.find('div',class_="Nnq7C weEfm")
-posts_link=post_info.find_all('a',attrs={'tabindex':'0'})
-for post in posts_link:
-    print(post.href)
-
-for i in follow_info:
-    print(i.text)
-
+follow_section=soup.find_all('ul',class_="k9MGp")
+follow_info=follow_section.find_all('span',class_="g47SY")
+data['posts']=[]
+data['name']=name.text
+data['bio']=bio
+data['website']=website.text
+data['post_numbers']=follow_info[0].text
+data['followers']=follow_info[1].text
+data['followings']=follow_info[2].text
+post_info=soup.find('ul',class_="Nnq7C weEfm")
+links=post_info.find_all('a')
+for link in links:
+    driver.get('https://www.instagram.com/twhiddleston'+link.get('href'))
+    detail=BeautifulSoup(driver.page_source,'html.parser')
+    post_text=detail.find('div',class_="C4VMK")
+    like_section=detail.find('div',class_="Nm9Fw")
+    likes=like_section.find('a').text
+    caption=re.findall(r'<span class="" title="Edited">(.*)</span',post_text.text)
+    if len(caption)==0:
+        caption.append('no caption')
+    image=detail.find('img').get('src')
+    data['posts'].append({'image':image, 'like':likes,'caption':caption[0]})
+    time.sleep(10)
 
 #soup=BeautifulSoup(r.text,'html.parser')
 #info=soup.find_all('div',class_="v9tJq AAaSh VfzDr")
