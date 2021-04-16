@@ -10,7 +10,10 @@ import os
 import wget
 import time
 from bs4 import BeautifulSoup
-data={}
+import re 
+path=os.getcwd()
+path=os.path.join(path,"bs_data")
+os.mkdir(path)
 url='https://www.instagram.com/twhiddleston/'
 driver = webdriver.Chrome('C:/Users/user/pyprojects/lib/chromedriver.exe')
 driver.get('https://www.instagram.com/twhiddleston')
@@ -43,29 +46,37 @@ value=soup.find_all('div',class_="v9tJq AAaSh VfzDr")
 name=soup.find('h1',class_="rhpdm")
 website=soup.find('a',class_="yLUwa")
 bio=soup.find('div',class_="-vDIg").span.string
-follow_section=soup.find_all('ul',class_="k9MGp")
-follow_info=follow_section.find_all('span',class_="g47SY")
+follow_section=soup.find_all('span',class_="g47SY")
+#print(follow_section)
+#follow_info=follow_section.find_all('span',class_="g47SY")
 data['posts']=[]
 data['name']=name.text
 data['bio']=bio
 data['website']=website.text
-data['post_numbers']=follow_info[0].text
-data['followers']=follow_info[1].text
-data['followings']=follow_info[2].text
-post_info=soup.find('ul',class_="Nnq7C weEfm")
+data['post_numbers']=follow_section[0].text
+data['followers']=follow_section[1].text
+data['followings']=follow_section[2].text
+post_info=soup.find('div',class_="Nnq7C weEfm")
 links=post_info.find_all('a')
+path=os.path.join(path,users[0])
+os.mkdir(path)
+path=os.path.join(path,"data.json")
 for link in links:
-    driver.get('https://www.instagram.com/twhiddleston'+link.get('href'))
+    driver.get('https://www.instagram.com/'+link.get('href'))
     detail=BeautifulSoup(driver.page_source,'html.parser')
-    post_text=detail.find('div',class_="C4VMK")
+    post_text=detail.find('div',class_="C7I1f X7jCj")
     like_section=detail.find('div',class_="Nm9Fw")
-    likes=like_section.find('a').text
-    caption=re.findall(r'<span class="" title="Edited">(.*)</span',post_text.text)
-    if len(caption)==0:
+    likes=like_section.find('a',class_="zV_Nj").span.text
+    caption=post_text.find('span',class_="").text
+    #caption=re.findall(r'<span class="" title="Edited">(.*)</span>',post_text.text)
+    if len(caption)=='':
         caption.append('no caption')
     image=detail.find('img').get('src')
-    data['posts'].append({'image':image, 'like':likes,'caption':caption[0]})
+    data['posts'].append({'image':image, 'like':likes,'caption':caption})
     time.sleep(10)
+json_object=json.dumps(data)
+with open(path,"w") as f:
+   f.write(json_object)
 
 #soup=BeautifulSoup(r.text,'html.parser')
 #info=soup.find_all('div',class_="v9tJq AAaSh VfzDr")
